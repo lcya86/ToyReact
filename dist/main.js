@@ -292,7 +292,7 @@ var Game = /*#__PURE__*/function (_Component3) {
 }(_toy_react__WEBPACK_IMPORTED_MODULE_0__["Component"]); // ========================================
 
 
-Object(_toy_react__WEBPACK_IMPORTED_MODULE_0__["render"])(Object(_toy_react__WEBPACK_IMPORTED_MODULE_0__["createElement"])(Game, null), document.getElementById("root"));
+Object(_toy_react__WEBPACK_IMPORTED_MODULE_0__["render"])(Object(_toy_react__WEBPACK_IMPORTED_MODULE_0__["createElement"])(Game, null), document.getElementById("root")); // console.log((<Game />).vdom);
 
 function calculateWinner(squares) {
   var lines = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]];
@@ -331,6 +331,20 @@ function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o =
 
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
 
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
+
+function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
+
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
+
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -340,64 +354,6 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
 var RENDER_TO_DOM = Symbol("render to dom");
-
-var ElementWrapper = /*#__PURE__*/function () {
-  function ElementWrapper(type) {
-    _classCallCheck(this, ElementWrapper);
-
-    this.root = document.createElement(type);
-  }
-
-  _createClass(ElementWrapper, [{
-    key: "setAttribute",
-    value: function setAttribute(name, value) {
-      if (name.match(/^on([\s\S]+)$/)) {
-        this.root.addEventListener(RegExp.$1.replace(/^[\s\S]/, function (c) {
-          return c.toLowerCase();
-        }), value);
-      } else if (name.toLowerCase() === "classname") {
-        this.root.setAttribute("class", value);
-      } else {
-        this.root.setAttribute(name, value);
-      }
-    }
-  }, {
-    key: "appendChild",
-    value: function appendChild(component) {
-      var range = document.createRange();
-      range.setStart(this.root, this.root.childNodes.length);
-      range.setEnd(this.root, this.root.childNodes.length);
-      component[RENDER_TO_DOM](range);
-    }
-  }, {
-    key: RENDER_TO_DOM,
-    value: function value(range) {
-      range.deleteContents();
-      range.insertNode(this.root);
-    }
-  }]);
-
-  return ElementWrapper;
-}();
-
-var TextWrapper = /*#__PURE__*/function () {
-  function TextWrapper(text) {
-    _classCallCheck(this, TextWrapper);
-
-    this.root = document.createTextNode(text);
-  }
-
-  _createClass(TextWrapper, [{
-    key: RENDER_TO_DOM,
-    value: function value(range) {
-      range.deleteContents();
-      range.insertNode(this.root);
-    }
-  }]);
-
-  return TextWrapper;
-}();
-
 var Component = /*#__PURE__*/function () {
   function Component() {
     _classCallCheck(this, Component);
@@ -421,25 +377,81 @@ var Component = /*#__PURE__*/function () {
     key: RENDER_TO_DOM,
     value: function value(range) {
       this._range = range;
-      this.render()[RENDER_TO_DOM](range);
+      this._vdom = this.vdom;
+
+      this._vdom[RENDER_TO_DOM](range);
     }
   }, {
-    key: "rerender",
-    value: function rerender() {
-      var oldRange = this._range;
-      var range = document.createRange();
-      range.setStart(oldRange.startContainer, oldRange.startOffset);
-      range.setEnd(oldRange.startContainer, oldRange.startOffset);
-      this[RENDER_TO_DOM](range);
-      oldRange.setStart(range.endContainer, range.endOffset);
-      oldRange.deleteContents();
-    }
+    key: "update",
+    value: function update() {
+      var isSameNode = function isSameNode(oldNode, newNode) {
+        if (oldNode.type !== newNode.type) {
+          return false;
+        }
+
+        if (Object.keys(oldNode.props).length > Object.keys(newNode.props).length) {
+          return false;
+        }
+
+        for (var name in newNode.props) {
+          if (newNode.props[name] !== oldNode.props[name]) {
+            return false;
+          }
+        }
+
+        if (newNode.type === "#text" && newNode.text !== oldNode.text) {
+          return false;
+        }
+
+        return true;
+      };
+
+      var update = function update(oldNode, newNode) {
+        if (!isSameNode(oldNode, newNode)) {
+          newNode[RENDER_TO_DOM](oldNode._range);
+          return;
+        }
+
+        newNode._range = oldNode._range;
+        var newChildren = newNode.vChildren;
+        var oldChildren = oldNode.vChildren;
+        var tailRange = oldChildren[oldChildren.length - 1]._range;
+
+        for (var i = 0; i < newChildren.length; i++) {
+          var newChild = newChildren[i];
+          var oldChild = oldChildren[i];
+
+          if (i < oldChildren.length) {
+            update(oldChild, newChild);
+          } else {
+            var range = document.createRange();
+            range.setStart(tailRange.endContainer, tailRange.endOffset);
+            range.setEnd(tailRange.endContainer, tailRange.endOffset);
+            newChild[RENDER_TO_DOM](range);
+            tailRange = range;
+          }
+        }
+      };
+
+      var vdom = this.vdom;
+      update(this._vdom, vdom);
+      this._vdom = vdom;
+    } // rerender() {
+    //   let oldRange = this._range;
+    //   let range = document.createRange();
+    //   range.setStart(oldRange.startContainer, oldRange.startOffset);
+    //   range.setEnd(oldRange.startContainer, oldRange.startOffset);
+    //   this[RENDER_TO_DOM](range);
+    //   oldRange.setStart(range.endContainer, range.endOffset);
+    //   oldRange.deleteContents();
+    // }
+
   }, {
     key: "setState",
     value: function setState(newState) {
       if (this.state === null || _typeof(this.state) !== "object") {
         this.state = newState;
-        this.rerender();
+        this.update();
         return;
       }
 
@@ -454,12 +466,148 @@ var Component = /*#__PURE__*/function () {
       };
 
       merge(this.state, newState);
-      this.rerender();
+      this.update();
+    }
+  }, {
+    key: "vdom",
+    get: function get() {
+      return this.render().vdom;
     }
   }]);
 
   return Component;
 }();
+
+var ElementWrapper = /*#__PURE__*/function (_Component) {
+  _inherits(ElementWrapper, _Component);
+
+  var _super = _createSuper(ElementWrapper);
+
+  function ElementWrapper(type) {
+    var _this;
+
+    _classCallCheck(this, ElementWrapper);
+
+    _this = _super.call(this, type);
+    _this.type = type;
+    return _this;
+  } // setAttribute(name, value) {
+  //   if (name.match(/^on([\s\S]+)$/)) {
+  //     this.root.addEventListener(
+  //       RegExp.$1.replace(/^[\s\S]/, (c) => c.toLowerCase()),
+  //       value
+  //     );
+  //   } else if (name.toLowerCase() === "classname") {
+  //     this.root.setAttribute("class", value);
+  //   } else {
+  //     this.root.setAttribute(name, value);
+  //   }
+  // }
+  // appendChild(component) {
+  //   let range = document.createRange();
+  //   range.setStart(this.root, this.root.childNodes.length);
+  //   range.setEnd(this.root, this.root.childNodes.length);
+  //   component[RENDER_TO_DOM](range);
+  // }
+
+
+  _createClass(ElementWrapper, [{
+    key: RENDER_TO_DOM,
+    value: function value(range) {
+      this._range = range;
+      var root = document.createElement(this.type);
+
+      for (var name in this.props) {
+        if (name.match(/^on([\s\S]+)$/)) {
+          root.addEventListener(RegExp.$1.replace(/^[\s\S]/, function (c) {
+            return c.toLowerCase();
+          }), this.props[name]);
+        } else if (name.toLowerCase() === "classname") {
+          root.setAttribute("class", this.props[name]);
+        } else {
+          root.setAttribute(name, this.props[name]);
+        }
+      }
+
+      if (!this.vChildren) {
+        this.vChildren = this.children.map(function (item) {
+          return item.vdom;
+        });
+      }
+
+      var _iterator = _createForOfIteratorHelper(this.vChildren),
+          _step;
+
+      try {
+        for (_iterator.s(); !(_step = _iterator.n()).done;) {
+          var component = _step.value;
+          var childRange = document.createRange();
+          childRange.setStart(root, root.childNodes.length);
+          childRange.setEnd(root, root.childNodes.length);
+          component[RENDER_TO_DOM](childRange);
+        }
+      } catch (err) {
+        _iterator.e(err);
+      } finally {
+        _iterator.f();
+      }
+
+      replaceContent(range, root);
+    }
+  }, {
+    key: "vdom",
+    get: function get() {
+      this.vChildren = this.children.map(function (item) {
+        return item.vdom;
+      });
+      return this;
+    }
+  }]);
+
+  return ElementWrapper;
+}(Component);
+
+var TextWrapper = /*#__PURE__*/function (_Component2) {
+  _inherits(TextWrapper, _Component2);
+
+  var _super2 = _createSuper(TextWrapper);
+
+  function TextWrapper(text) {
+    var _this2;
+
+    _classCallCheck(this, TextWrapper);
+
+    _this2 = _super2.call(this, text);
+    _this2.text = text;
+    _this2.type = "#text";
+    return _this2;
+  }
+
+  _createClass(TextWrapper, [{
+    key: RENDER_TO_DOM,
+    value: function value(range) {
+      this._range = range;
+      var root = document.createTextNode(this.text);
+      replaceContent(range, root);
+    }
+  }, {
+    key: "vdom",
+    get: function get() {
+      return this;
+    }
+  }]);
+
+  return TextWrapper;
+}(Component);
+
+function replaceContent(range, node) {
+  range.insertNode(node);
+  range.setStartAfter(node);
+  range.deleteContents();
+  range.setStartBefore(node);
+  range.setEndAfter(node);
+}
+
 var createElement = function createElement(type, attributes) {
   var e;
 
@@ -474,12 +622,12 @@ var createElement = function createElement(type, attributes) {
   }
 
   var insertChildren = function insertChildren(children) {
-    var _iterator = _createForOfIteratorHelper(children),
-        _step;
+    var _iterator2 = _createForOfIteratorHelper(children),
+        _step2;
 
     try {
-      for (_iterator.s(); !(_step = _iterator.n()).done;) {
-        var c = _step.value;
+      for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+        var c = _step2.value;
 
         if (typeof c === "string") {
           c = new TextWrapper(c);
@@ -496,9 +644,9 @@ var createElement = function createElement(type, attributes) {
         }
       }
     } catch (err) {
-      _iterator.e(err);
+      _iterator2.e(err);
     } finally {
-      _iterator.f();
+      _iterator2.f();
     }
   };
 
